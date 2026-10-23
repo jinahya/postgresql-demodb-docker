@@ -1,0 +1,149 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - Dockerfile
+      - docker-entrypoint-initdb.d/**
+      - scripts/**
+      - versions.json
+      - .github/workflows/build.yml
+  pull_request:
+    paths:
+      - Dockerfile
+      - docker-entrypoint-initdb.d/**
+      - scripts/**
+      - versions.json
+      - .github/workflows/build.yml
+  schedule:
+    - cron: "17 3 * * 1"   # weekly, picks up new postgres minor releases and base image fixes
+  workflow_dispatch:
+    inputs:
+      dataset:
+        description: "Dataset versions, comma separated (empty = all)"
+        default: ""
+      size:
+        description: "Sizes, comma separated (empty = all)"
+        default: ""
+      pg:
+        description: "PostgreSQL majors, comma separated (empty = all)"
+        default: ""
+      variant:
+        description: "Base variants, e.g. 18-trixie,18-alpine3.24 (empty = all)"
+        default: ""
+      push:
+        description: "Push images to the registries"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: postgresql-demodb
+  PLATFORMS: linux/amd64,linux/arm64
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.gen.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: gen
+        run: |
+          python3 -I scripts/matrix.py \
+            --dataset "${{ inputs.dataset }}" --size "${{ inputs.size }}" \
+            --pg "${{ inputs.pg }}" --variant "${{ inputs.variant }}" > matrix.json
+          python3 -I -c 'import json;[print(e["id"], "->", e["tags"].replace("\n"," ")) for e in json.load(open("matrix.json"))["include"]]'
+          echo "matrix=$(cat matrix.json)" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.matrix.outputs.matrix) }}
+    name: ${{ matrix.id }}
+    env:
+      PUSH: ${{ github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || inputs.push) }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download dump
+        run: scripts/fetch-dump.sh "${{ matrix.dataset }}" "${{ matrix.size }}"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build for smoke test (amd64)
+        if: matrix.test
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          platforms: linux/amd64
+          tags: local/${{ env.IMAGE }}:${{ matrix.id }}
+          build-args: |
+            BASE_IMAGE=${{ matrix.base_image }}
+            DEMODB_VERSION=${{ matrix.dataset }}
+            DEMODB_SIZE=${{ matrix.size }}
+
+      - name: Smoke test
+        if: matrix.test
+        run: scripts/smoke-test.sh local/${{ env.IMAGE }}:${{ matrix.id }} 5400
+
+      - name: Login to GHCR
+        if: env.PUSH == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Docker Hub
+        if: env.PUSH == 'true' && env.DOCKERHUB_TOKEN != ''
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ env.DOCKERHUB_TOKEN }}
+
+      - name: Compute image references
+        id: refs
+        env:
+          TAGS: ${{ matrix.tags }}
+        run: |
+          {
+            echo "tags<<EOF"
+            while IFS= read -r t; do
+              [ -n "$t" ] || continue
+              echo "ghcr.io/${{ github.repository_owner }}/${IMAGE}:${t}"
+              if [ -n "$DOCKERHUB_TOKEN" ]; then
+                echo "docker.io/${DOCKERHUB_USERNAME}/${IMAGE}:${t}"
+              fi
+            done <<< "$TAGS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build and push (${{ env.PLATFORMS }})
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: ${{ env.PUSH == 'true' }}
+          platforms: ${{ env.PLATFORMS }}
+          tags: ${{ steps.refs.outputs.tags }}
+          build-args: |
+            BASE_IMAGE=${{ matrix.base_image }}
+            DEMODB_VERSION=${{ matrix.dataset }}
+            DEMODB_SIZE=${{ matrix.size }}
+          labels: |
+            org.opencontainers.image.base.name=${{ matrix.base_tag }}
+            org.opencontainers.image.revision=${{ github.sha }}

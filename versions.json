@@ -1,18 +1,35 @@
 {
   "image": "postgresql-demodb",
-  "registries": ["ghcr.io/jinahya", "docker.io/jinahya"],
+  "registries": [
+    "ghcr.io/jinahya",
+    "docker.io/jinahya"
+  ],
   "platforms": "linux/amd64,linux/arm64",
   "default_size": "3m",
   "url": "https://edu.postgrespro.ru/demo-{version}-{size}.sql.gz",
   "datasets": [
     {
       "version": "20250901",
-      "pg": ["18"],
+      "pg": [
+        "18"
+      ],
       "sizes": {
-        "3m": {"sha256": "fe341811a2f8e19765b9841accda7652ee897cbc7e7f749496d82a32e9729e9b", "test": true},
-        "6m": {"sha256": "", "test": true},
-        "1y": {"sha256": "", "test": true},
-        "2y": {"sha256": "", "test": false}
+        "3m": {
+          "sha256": "fe341811a2f8e19765b9841accda7652ee897cbc7e7f749496d82a32e9729e9b",
+          "test": true
+        },
+        "6m": {
+          "sha256": "2eec3fe4f532359bdd540b783c0ab9e6488ae679e62be654b2b426710ae1b03f",
+          "test": true
+        },
+        "1y": {
+          "sha256": "d2af020ca78af936520ff905c02d9e3065e842d5488288519191bc848a02f8ca",
+          "test": true
+        },
+        "2y": {
+          "sha256": "6aa9ca6313768b6b9ee8a6f1e13e902249c9d40fbad59938c7b6cc3dd90af471",
+          "test": true
+        }
       }
     }
   ]

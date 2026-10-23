@@ -40,12 +40,12 @@ newest 3-month dataset. Pin the full tag, e.g. `18.6-trixie-20250901-3m`, when y
 
 ### Dataset sizes
 
-| size | flights data span | download in image | database after load | first start |
+| size | data span | download in image | database after load | first start (CI runner, SSD) |
 |---|---|---|---|---|
-| `3m` | 3 months | ~140 MB | ~1.3 GB | a few minutes |
-| `6m` | 6 months | ~290 MB | ~2.7 GB | several minutes |
-| `1y` | 1 year | ~590 MB | ~5.4 GB | tens of minutes |
-| `2y` | 2 years | ~1.2 GB | ~11 GB | long |
+| `3m` | 3 months | ~140 MB | ~1.3 GB | ~1 min |
+| `6m` | 6 months | ~290 MB | ~2.7 GB | ~2–3 min |
+| `1y` | 1 year | ~590 MB | ~5.4 GB | ~3–4 min |
+| `2y` | 2 years | ~1.2 GB | ~11 GB | ~7–10 min |
 
 ### Dataset releases
 

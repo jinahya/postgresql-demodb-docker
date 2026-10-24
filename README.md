@@ -5,8 +5,8 @@ Docker images of the official [`postgres`](https://hub.docker.com/_/postgres) im
 
 Images are published to:
 
-- `ghcr.io/jinahya/postgresql-demodb`
-- `docker.io/onacit/postgresql-demodb` (`onacit/postgresql-demodb` on Docker Hub)
+- Docker Hub: [`onacit/postgresql-demodb`](https://hub.docker.com/r/onacit/postgresql-demodb)
+- GitHub Container Registry: [`ghcr.io/jinahya/postgresql-demodb`](https://github.com/jinahya/postgresql-demodb-docker/pkgs/container/postgresql-demodb)
 
 ## Quick start
 

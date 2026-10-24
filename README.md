@@ -82,6 +82,7 @@ scripts/smoke-test.sh postgresql-demodb:18-3m
 - `versions.json` lists the dataset releases, their sha256 checksums, and the PostgreSQL majors to build.
 - `scripts/matrix.py` asks Docker Hub for the current `postgres` tags of those majors and generates the build matrix and
   tag lists. It only builds base variants that carry the latest minor release.
+- A second workflow syncs this README to the Docker Hub repository description whenever it changes.
 - The GitHub Actions workflow builds every entry for `linux/amd64` and `linux/arm64`, smoke tests it by loading the data,
   and pushes to GHCR and Docker Hub. It runs on pushes, weekly to follow new PostgreSQL minor releases, and on demand.
 - To add a dataset release or a PostgreSQL major, edit `versions.json`.

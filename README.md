@@ -6,12 +6,12 @@ Docker images of the official [`postgres`](https://hub.docker.com/_/postgres) im
 Images are published to:
 
 - `ghcr.io/jinahya/postgresql-demodb`
-- `docker.io/jinahya/postgresql-demodb` (`jinahya/postgresql-demodb` on Docker Hub)
+- `docker.io/onacit/postgresql-demodb` (`onacit/postgresql-demodb` on Docker Hub)
 
 ## Quick start
 
 ```sh
-docker run -d --name demodb -p 5432:5432 -e POSTGRES_PASSWORD=secret jinahya/postgresql-demodb:18
+docker run -d --name demodb -p 5432:5432 -e POSTGRES_PASSWORD=secret onacit/postgresql-demodb:18
 # wait for the first-start load to finish, then
 psql -h localhost -U postgres -d demo -c 'select count(*) from bookings.flights'
 ```
@@ -35,7 +35,7 @@ Shorthand tags drop a component and follow the newest release of what they omit:
 | size | the default size, `3m` | `18-20250901`, `bookworm-20250901` |
 | both | newest release, default size | `18`, `18.6-trixie`, `alpine`, `latest` |
 
-So every official tag such as `postgres:18-alpine` has a counterpart `jinahya/postgresql-demodb:18-alpine` that carries the
+So every official tag such as `postgres:18-alpine` has a counterpart `onacit/postgresql-demodb:18-alpine` that carries the
 newest 3-month dataset. Pin the full tag, e.g. `18.6-trixie-20250901-3m`, when you need an image that never changes.
 
 ### Dataset sizes

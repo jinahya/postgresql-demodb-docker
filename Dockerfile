@@ -17,6 +17,11 @@ ENV DEMODB_VERSION=${DEMODB_VERSION} \
 COPY --chmod=0555 dumps/demo-${DEMODB_VERSION}-${DEMODB_SIZE}.sql.gz /opt/demodb/demo.sql.gz
 COPY --chmod=0755 docker-entrypoint-initdb.d/ /docker-entrypoint-initdb.d/
 
+# The temporary init server listens on the unix socket only, so TCP readiness means the load finished.
+# The long start period covers the 2y load on slow disks; a success before it ends reports healthy at once.
+HEALTHCHECK --interval=5s --timeout=5s --start-period=30m --retries=6 \
+    CMD pg_isready -h 127.0.0.1 -U "${POSTGRES_USER:-postgres}" -q || exit 1
+
 LABEL org.opencontainers.image.title="PostgreSQL with the Postgres Professional demo database (Airlines)" \
       org.opencontainers.image.description="Official postgres image that loads demo database ${DEMODB_VERSION}-${DEMODB_SIZE} on first start" \
       org.opencontainers.image.source="https://github.com/jinahya/postgresql-demodb-docker" \

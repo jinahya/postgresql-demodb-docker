@@ -14,8 +14,8 @@ docker run -d --name "$name" -e POSTGRES_PASSWORD=postgres "$image" >/dev/null
 echo "smoke-test: started $name from $image, waiting up to ${timeout}s for the load"
 
 start=$(date +%s)
-# The temporary init server listens on the unix socket only, so TCP readiness means the load finished.
-until docker exec "$name" pg_isready -h 127.0.0.1 -U postgres -q 2>/dev/null; do
+# The image's health check turns healthy once the load has finished.
+until [ "$(docker inspect -f '{{.State.Health.Status}}' "$name")" = "healthy" ]; do
   if [ "$(docker inspect -f '{{.State.Running}}' "$name")" != "true" ]; then
     echo "smoke-test: container exited during load" >&2
     docker logs "$name" | tail -50 >&2

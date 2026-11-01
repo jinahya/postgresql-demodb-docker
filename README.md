@@ -12,7 +12,7 @@ Images are published to:
 
 ```sh
 docker run -d --name demodb -p 5432:5432 -e POSTGRES_PASSWORD=secret onacit/postgresql-demodb:18
-# wait for the first-start load to finish, then
+# wait until `docker inspect -f '{{.State.Health.Status}}' demodb` says healthy, then
 psql -h localhost -U postgres -d demo -c 'select count(*) from bookings.flights'
 ```
 
@@ -58,7 +58,8 @@ newest 3-month dataset. Pin the full tag, e.g. `18.6-trixie-20250901-3m`, when y
 The image only adds the gzipped SQL dump and a small init script to the official image. On the first start of an empty
 data directory the official entrypoint runs the script, which creates the `demo` database and replays the dump with
 `psql`, exactly as the demodb page describes. Later starts skip the load, so keep the data volume to avoid reloading.
-The port opens only after the load has finished; wait for it with `pg_isready` or a health check.
+The port opens only after the load has finished, and the image's health check reports healthy only then, so
+`depends_on: { demodb: { condition: service_healthy } }` in Compose waits for the data.
 
 ## Environment
 

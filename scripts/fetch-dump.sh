@@ -34,7 +34,8 @@ if [ -f "$file" ] && verify; then
 fi
 
 echo "fetch-dump: downloading ${url}"
-curl -fL --retry 5 --retry-delay 10 -o "${file}.part" "$url"
+# The server drops long transfers now and then; -C - resumes the .part file, also across reruns.
+curl -fL -C - --retry 10 --retry-delay 10 --retry-all-errors -o "${file}.part" "$url"
 mv "${file}.part" "$file"
 verify || { echo "fetch-dump: sha256 mismatch for ${file}" >&2; exit 1; }
 echo "fetch-dump: ${file} verified"

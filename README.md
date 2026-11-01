@@ -90,5 +90,5 @@ scripts/smoke-test.sh postgresql-demodb:18-3m
 
 ## License
 
-The demo database is © Postgres Professional and distributed under the MIT license (see the header of the dump).
-The files in this repository are MIT licensed as well.
+The scripts of this repository are under the [MIT License](https://github.com/jinahya/postgresql-demodb-docker/blob/main/LICENSE).
+The demo database is © Postgres Professional, under the MIT license as well (see the header of the dump).

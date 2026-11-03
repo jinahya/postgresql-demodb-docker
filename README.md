@@ -5,13 +5,13 @@ Docker images of the official [`postgres`](https://hub.docker.com/_/postgres) im
 
 Images are published to:
 
-- Docker Hub: [`onacit/postgresql-demodb`](https://hub.docker.com/r/onacit/postgresql-demodb)
+- Docker Hub: [`jinahya/postgresql-demodb`](https://hub.docker.com/r/jinahya/postgresql-demodb)
 - GitHub Container Registry: [`ghcr.io/jinahya/postgresql-demodb`](https://github.com/jinahya/postgresql-demodb-docker/pkgs/container/postgresql-demodb)
 
 ## Quick start
 
 ```sh
-docker run -d --name demodb -p 5432:5432 -e POSTGRES_PASSWORD=secret onacit/postgresql-demodb:18
+docker run -d --name demodb -p 5432:5432 -e POSTGRES_PASSWORD=secret jinahya/postgresql-demodb:18
 # wait until `docker inspect -f '{{.State.Health.Status}}' demodb` says healthy, then
 psql -h localhost -U postgres -d demo -c 'select count(*) from bookings.flights'
 ```
@@ -35,7 +35,7 @@ Shorthand tags drop a component and follow the newest release of what they omit:
 | size | the default size, `3m` | `18-20250901`, `bookworm-20250901` |
 | both | newest release, default size | `18`, `18.6-trixie`, `alpine`, `latest` |
 
-So every official tag such as `postgres:18-alpine` has a counterpart `onacit/postgresql-demodb:18-alpine` that carries the
+So every official tag such as `postgres:18-alpine` has a counterpart `jinahya/postgresql-demodb:18-alpine` that carries the
 newest 3-month dataset. Pin the full tag, e.g. `18.6-trixie-20250901-3m`, when you need an image that never changes.
 
 ### Dataset sizes
@@ -88,7 +88,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA bookings TO "{username}";
 ```sh
 docker run -d --name demodb -p 5432:5432 -e POSTGRES_PASSWORD=secret \
   -v "$PWD/20-users.sql:/docker-entrypoint-initdb.d/20-users.sql:ro" \
-  onacit/postgresql-demodb:18
+  jinahya/postgresql-demodb:18
 psql -h localhost -U {username} -d demo -c 'select count(*) from flights'
 ```
 

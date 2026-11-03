@@ -51,7 +51,7 @@ newest 3-month dataset. Pin the full tag, e.g. `18.6-trixie-20250901-3m`, when y
 
 | release | PostgreSQL | sizes |
 |---|---|---|
-| `20250901` | 18 | `3m`, `6m`, `1y`, `2y` |
+| `20250901` | 17, 18 | `3m`, `6m`, `1y`, `2y` |
 
 ## How it works
 

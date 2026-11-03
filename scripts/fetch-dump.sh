@@ -35,7 +35,9 @@ fi
 
 echo "fetch-dump: downloading ${url}"
 # The server drops long transfers now and then; -C - resumes the .part file, also across reruns.
-curl -fL -C - --retry 10 --retry-delay 10 --retry-all-errors -o "${file}.part" "$url"
+# It also stalls without dropping them, so a transfer slower than 10 KB/s for 2 minutes is aborted and resumed.
+curl -fL -C - --retry 50 --retry-delay 10 --retry-all-errors \
+  --speed-limit 10240 --speed-time 120 -o "${file}.part" "$url"
 mv "${file}.part" "$file"
 verify || { echo "fetch-dump: sha256 mismatch for ${file}" >&2; exit 1; }
 echo "fetch-dump: ${file} verified"

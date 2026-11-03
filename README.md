@@ -69,6 +69,35 @@ The port opens only after the load has finished, and the image's health check re
 
 All variables of the official image apply as well.
 
+## Additional users
+
+`POSTGRES_USER` is the only role, and it is a superuser. To add another one, for example a read-only user, mount an
+extra init script next to the image's `10-demodb.sh`. The official entrypoint runs the scripts in name order on the first
+start, so a name like `20-...` runs after the data is loaded.
+
+`20-users.sql`, with `{username}` and `{password}` replaced:
+
+```sql
+CREATE ROLE "{username}" LOGIN PASSWORD '{password}';
+GRANT CONNECT ON DATABASE demo TO "{username}";
+\connect demo
+GRANT USAGE ON SCHEMA bookings TO "{username}";
+GRANT SELECT ON ALL TABLES IN SCHEMA bookings TO "{username}";
+```
+
+```sh
+docker run -d --name demodb -p 5432:5432 -e POSTGRES_PASSWORD=secret \
+  -v "$PWD/20-users.sql:/docker-entrypoint-initdb.d/20-users.sql:ro" \
+  onacit/postgresql-demodb:18
+psql -h localhost -U {username} -d demo -c 'select count(*) from flights'
+```
+
+- Mount the file, not a directory: mounting over `/docker-entrypoint-initdb.d` hides `10-demodb.sh` and the data is never
+  loaded.
+- `.sql` scripts connect to `POSTGRES_DB` (`postgres` by default), hence the `\connect demo` before the schema grants.
+- Init scripts run only when the data directory is empty. For an existing volume, run the statements with `psql` instead.
+- Scripts named `*.sh` also work and can read the password from an environment variable instead of the file.
+
 ## Building locally
 
 ```sh
